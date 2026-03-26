@@ -61,8 +61,8 @@ export function AuthProvider({ children }) {
       setWorkspaceRole('owner')
 
       // Self-heal: Ensure owner is in founders table
-      const { data: founderCheck } = await supabase.from('founders').select('id').eq('email', email).eq('user_id', firebaseUser.uid).maybeSingle()
-      if (!founderCheck) {
+      const { data: founderChecks } = await supabase.from('founders').select('id').eq('email', email).eq('user_id', firebaseUser.uid).limit(1)
+      if (!founderChecks || founderChecks.length === 0) {
         await supabase.from('founders').insert({
           user_id: firebaseUser.uid,
           name: ownership.member_name || firebaseUser.displayName || email.split('@')[0],

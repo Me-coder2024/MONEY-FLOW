@@ -88,6 +88,64 @@ export function AppProvider({ children }) {
     return data
   }
 
+  const removeDeposit = async (id) => {
+    const deposit = deposits.find(d => d.id === id)
+    if (!deposit) return
+
+    const { data: latestFund } = await supabase.from('funds').select('current_balance, total_deposited').eq('id', deposit.fund_id).single()
+    if (latestFund) {
+      const newBalance = parseFloat(latestFund.current_balance || 0) - parseFloat(deposit.amount)
+      const newDeposited = parseFloat(latestFund.total_deposited || 0) - parseFloat(deposit.amount)
+      await supabase.from('funds').update({ current_balance: newBalance, total_deposited: newDeposited }).eq('id', deposit.fund_id)
+    }
+
+    if (deposit.founder_id) {
+      const { data: latestFounder } = await supabase.from('founders').select('total_contributed').eq('id', deposit.founder_id).single()
+      if (latestFounder) {
+        const newContrib = parseFloat(latestFounder.total_contributed || 0) - parseFloat(deposit.amount)
+        await supabase.from('founders').update({ total_contributed: newContrib }).eq('id', deposit.founder_id)
+      }
+    }
+
+    const { error } = await supabase.from('deposits').delete().eq('id', id)
+    if (error) { addToast(error.message, 'error'); return }
+
+    await supabase.from('audit_log').insert({ action: 'delete', table_affected: 'deposits', record_id: id, performed_by: currentUser.name, old_value: { amount: deposit.amount }, user_id: workspaceId })
+    await fetchAll()
+    addToast('Deposit deleted successfully')
+  }
+
+  const updateDeposit = async (id, updates) => {
+    const oldDeposit = deposits.find(d => d.id === id)
+    if (!oldDeposit) return
+
+    const amountDiff = updates.amount !== undefined ? parseFloat(updates.amount) - parseFloat(oldDeposit.amount) : 0
+
+    const { data, error } = await supabase.from('deposits').update(updates).eq('id', id).select('*, funds(fund_name, fund_type), founders(name)').single()
+    if (error) { addToast(error.message, 'error'); return null }
+
+    if (amountDiff !== 0) {
+      const { data: latestFund } = await supabase.from('funds').select('current_balance, total_deposited').eq('id', oldDeposit.fund_id).single()
+      if (latestFund) {
+        const newBalance = parseFloat(latestFund.current_balance || 0) + amountDiff
+        const newDeposited = parseFloat(latestFund.total_deposited || 0) + amountDiff
+        await supabase.from('funds').update({ current_balance: newBalance, total_deposited: newDeposited }).eq('id', oldDeposit.fund_id)
+      }
+      if (oldDeposit.founder_id) {
+        const { data: latestFounder } = await supabase.from('founders').select('total_contributed').eq('id', oldDeposit.founder_id).single()
+        if (latestFounder) {
+          const newContrib = parseFloat(latestFounder.total_contributed || 0) + amountDiff
+          await supabase.from('founders').update({ total_contributed: newContrib }).eq('id', oldDeposit.founder_id)
+        }
+      }
+    }
+
+    await supabase.from('audit_log').insert({ action: 'edit', table_affected: 'deposits', record_id: id, performed_by: currentUser.name, new_value: updates, old_value: { amount: oldDeposit.amount }, user_id: workspaceId })
+    await fetchAll()
+    addToast('Deposit updated successfully')
+    return data
+  }
+
   // --- WITHDRAWAL OPERATIONS ---
   const addWithdrawal = async (withdrawal) => {
     const { data, error } = await supabase.from('withdrawals').insert({ ...withdrawal, user_id: workspaceId }).select('*, funds(fund_name, fund_type)').single()
@@ -253,7 +311,7 @@ export function AppProvider({ children }) {
   const value = {
     funds, founders, deposits, withdrawals, auditLog, workspaceMembers,
     loading, currentUser, toasts, workspaceId,
-    addFund, addDeposit, addWithdrawal, approveWithdrawal, rejectWithdrawal,
+    addFund, addDeposit, updateDeposit, removeDeposit, addWithdrawal, approveWithdrawal, rejectWithdrawal,
     addFounder, updateFounder, removeFounder,
     fetchAll, addToast,
     totalBalance, pendingWithdrawals, approvedWithdrawals,
