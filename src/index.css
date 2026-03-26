@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+/* Glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradient backgrounds */
+.gradient-blue { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.gradient-green { background: linear-gradient(135deg, #10b981, #047857); }
+.gradient-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.gradient-indigo { background: linear-gradient(135deg, #6366f1, #4338ca); }
+
+/* Progress bar animation */
+.progress-bar-fill {
+  transition: width 1s ease-out;
+}
+
+/* File upload zone */
+.upload-zone {
+  transition: all 0.2s ease;
+}
+.upload-zone:hover {
+  border-color: #6366f1;
+  background-color: #eef2ff;
+}
+.upload-zone.dragover {
+  border-color: #6366f1;
+  background-color: #e0e7ff;
+  transform: scale(1.01);
+}
+
+/* Toast notifications */
+.toast-enter {
+  animation: slideIn 0.3s ease-out forwards, fadeIn 0.3s ease-out forwards;
+}
+
+/* Step indicator connector */
+.step-connector {
+  height: 2px;
+  flex: 1;
+  transition: background-color 0.3s ease;
+}
+
+/* Sidebar link active indicator */
+.sidebar-link-active {
+  position: relative;
+}
+.sidebar-link-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #6366f1;
+  border-radius: 0 4px 4px 0;
+}
