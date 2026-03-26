@@ -4,11 +4,15 @@ import { useAuth } from '../context/AuthContext'
 import { formatCurrency, formatCurrencyShort, percentage } from '../utils/format'
 
 export default function FoundersList() {
-  const { founders, funds, workspaceMembers, addFounder, removeFounder, loading } = useApp()
+  const { founders, funds, workspaceMembers, addFounder, updateFounder, removeFounder, loading } = useApp()
   const { isOwner } = useAuth()
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ name: '', email: '', phone: '', equity_percentage: '', total_contributed: 0 })
   const [submitting, setSubmitting] = useState(false)
+  
+  const [editingFounder, setEditingFounder] = useState(null)
+  const [editForm, setEditForm] = useState({ name: '', phone: '', equity_percentage: '' })
+  const [updating, setUpdating] = useState(false)
 
   if (loading) return <div className="animate-pulse h-96 bg-white rounded-2xl" />
 
@@ -174,7 +178,13 @@ export default function FoundersList() {
           {founders.map(founder => {
             const pct = totalContributed > 0 ? percentage(parseFloat(founder.total_contributed), totalContributed) : 0
             return (
-              <div key={founder.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 card-hover">
+              <div key={founder.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 card-hover relative group">
+                {isOwner && (
+                  <button onClick={() => { setEditingFounder(founder); setEditForm({ name: founder.name, phone: founder.phone || '', equity_percentage: founder.equity_percentage || 0 }); }}
+                    className="absolute top-4 right-4 text-xs font-semibold bg-gray-50 px-2 py-1 rounded-md text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-all">
+                    ✏️ Edit
+                  </button>
+                )}
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full gradient-blue flex items-center justify-center text-white text-lg font-bold">
                     {founder.name.charAt(0)}
@@ -210,6 +220,50 @@ export default function FoundersList() {
               </div>
             )
           })}
+        </div>
+      )}
+
+      {/* Edit Founder Modal */}
+      {editingFounder && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl animate-fade-in relative">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Edit Founder Details</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              setUpdating(true);
+              const updates = {
+                name: editForm.name,
+                phone: editForm.phone || null,
+                equity_percentage: editForm.equity_percentage ? parseFloat(editForm.equity_percentage) : 0
+              };
+              await updateFounder(editingFounder.id, updates);
+              setUpdating(false);
+              setEditingFounder(null);
+            }} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <input type="text" required value={editForm.name} onChange={e => setEditForm(prev => ({...prev, name: e.target.value}))}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input type="text" value={editForm.phone} onChange={e => setEditForm(prev => ({...prev, phone: e.target.value}))}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Equity %</label>
+                <input type="number" min="0" max="100" step="0.1" value={editForm.equity_percentage}
+                  onChange={e => setEditForm(prev => ({...prev, equity_percentage: e.target.value}))}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-primary-500 outline-none" />
+              </div>
+              <div className="flex gap-3 pt-4 border-t border-gray-100 mt-6">
+                <button type="button" onClick={() => setEditingFounder(null)} className="flex-1 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="submit" disabled={updating} className="flex-1 bg-primary-600 hover:bg-primary-700 text-white py-2.5 rounded-xl transition-colors disabled:opacity-50">
+                  {updating ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

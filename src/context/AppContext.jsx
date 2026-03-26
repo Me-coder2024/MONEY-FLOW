@@ -170,6 +170,20 @@ export function AppProvider({ children }) {
     return data
   }
 
+  const updateFounder = async (id, updates) => {
+    const { data, error } = await supabase.from('founders').update(updates).eq('id', id).select().single()
+    if (error) { addToast(error.message, 'error'); return null }
+
+    await supabase.from('audit_log').insert({
+      action: 'edit', table_affected: 'founders', record_id: id,
+      performed_by: currentUser.name, new_value: updates, user_id: workspaceId,
+    })
+
+    await fetchAll()
+    addToast('Founder updated successfully')
+    return data
+  }
+
   const removeFounder = async (id) => {
     const founder = founders.find(f => f.id === id)
     if (!founder) return
@@ -240,7 +254,7 @@ export function AppProvider({ children }) {
     funds, founders, deposits, withdrawals, auditLog, workspaceMembers,
     loading, currentUser, toasts, workspaceId,
     addFund, addDeposit, addWithdrawal, approveWithdrawal, rejectWithdrawal,
-    addFounder, removeFounder,
+    addFounder, updateFounder, removeFounder,
     fetchAll, addToast,
     totalBalance, pendingWithdrawals, approvedWithdrawals,
     getBurnRate, getCategoryBreakdown, getComplianceScore,

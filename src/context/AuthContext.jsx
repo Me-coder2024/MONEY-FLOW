@@ -59,6 +59,17 @@ export function AuthProvider({ children }) {
     if (ownership) {
       setWorkspaceId(firebaseUser.uid)
       setWorkspaceRole('owner')
+
+      // Self-heal: Ensure owner is in founders table
+      const { data: founderCheck } = await supabase.from('founders').select('id').eq('email', email).eq('user_id', firebaseUser.uid).maybeSingle()
+      if (!founderCheck) {
+        await supabase.from('founders').insert({
+          user_id: firebaseUser.uid,
+          name: ownership.member_name || firebaseUser.displayName || email.split('@')[0],
+          email: email,
+          equity_percentage: 100,
+        })
+      }
       return
     }
 
@@ -69,6 +80,15 @@ export function AuthProvider({ children }) {
       member_name: firebaseUser.displayName || '',
       role: 'owner',
     })
+    
+    // Auto-add owner to founders
+    await supabase.from('founders').insert({
+      user_id: firebaseUser.uid,
+      name: firebaseUser.displayName || email.split('@')[0],
+      email: email,
+      equity_percentage: 100,
+    })
+
     setWorkspaceId(firebaseUser.uid)
     setWorkspaceRole('owner')
   }
