@@ -306,36 +306,4 @@ function LoadingSkeleton() {
   )
 }
 
-function ComplianceBar({ label, value }) {
-  return (
-    <div>
-      <div className="flex justify-between text-xs mb-1">
-        <span className="text-gray-600">{label}</span>
-        <span className="font-medium">{value.toFixed(1)}%</span>
-      </div>
-      <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-        <div className={`h-full rounded-full progress-bar-fill ${value >= 90 ? 'bg-emerald-500' : value >= 70 ? 'bg-amber-500' : 'bg-red-500'}`}
-          style={{ width: `${value}%` }} />
-      </div>
-    </div>
-  )
-}
 
-function LoadingSkeleton() {
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-3 gap-5">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-36 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-24 mb-4" />
-            <div className="h-8 bg-gray-200 rounded w-32" />
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-3 gap-5">
-        <div className="col-span-2 bg-white rounded-2xl shadow-sm border p-6 h-56 animate-pulse" />
-        <div className="bg-white rounded-2xl shadow-sm border p-6 h-56 animate-pulse" />
-      </div>
-    </div>
-  )
-}
