@@ -74,7 +74,7 @@ export default function DepositsList() {
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700/50 overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-gray-100/80 dark:border-slate-800/60 overflow-hidden">
         <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-slate-900/50">

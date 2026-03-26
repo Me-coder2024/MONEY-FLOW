@@ -35,9 +35,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white">Financial Dashboard</h1>
-        <p className="text-gray-500 dark:text-slate-400 mt-1">Real-time overview of your workspace funds and spending.</p>
+      <div className="mb-6">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">Financial Dashboard</h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Real-time overview of your workspace funds and spending.</p>
       </div>
 
       {/* Fund Summary Cards */}
@@ -50,7 +50,7 @@ export default function Dashboard() {
 
           return (
             <Link to={`/funds/${fund.id}`} key={fund.id}
-              className={`bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700/50 p-6 border-l-4 ${colors.border} card-hover group transition-all`}
+              className={`bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm hover:shadow-xl dark:shadow-none border border-gray-100/80 dark:border-slate-800/60 p-5 sm:p-6 border-l-4 ${colors.border} card-hover group transition-all animate-fade-in`}
               style={{ animationDelay: `${i * 80}ms` }}
             >
               <div className="flex items-center justify-between mb-4">
@@ -66,7 +66,7 @@ export default function Dashboard() {
                   {fund.fund_type}
                 </span>
               </div>
-              <p className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">{formatCurrencyShort(fund.current_balance)}</p>
+              <p className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white tracking-tight tabular-nums animate-count">{formatCurrencyShort(fund.current_balance)}</p>
               
               {utilization !== null ? (
                 <div className="mt-5">
@@ -92,7 +92,7 @@ export default function Dashboard() {
       {/* Middle Row: Balance Breakdown + Burn Rate */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Total Balance Card with Doughnut */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700/50 p-6 md:p-8">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 rounded-2xl shadow-sm border border-gray-100/80 dark:border-slate-800/60 p-5 sm:p-6 md:p-8">
           <h3 className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-8">Balance Allocation</h3>
           <div className="flex flex-col md:flex-row items-center gap-10">
             <div className="w-52 h-52 relative flex-shrink-0 group">
@@ -291,16 +291,23 @@ function ComplianceBar({ label, value, color }) {
 
 function LoadingSkeleton() {
   return (
-    <div className="space-y-8 max-w-7xl mx-auto py-4">
-      <div className="h-12 bg-gray-200 dark:bg-slate-800 rounded-2xl w-64 animate-pulse" />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="space-y-6 max-w-7xl mx-auto py-4 animate-fade-in">
+      <div className="h-10 bg-gray-200/80 dark:bg-slate-800/60 rounded-xl w-56 animate-pulse" />
+      <div className="h-4 bg-gray-100 dark:bg-slate-800/40 rounded-lg w-80 animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3].map(i => (
-          <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-8 h-44 animate-pulse border border-gray-100 dark:border-slate-700/50" />
+          <div key={i} className="bg-white dark:bg-slate-900/80 rounded-2xl p-6 h-40 animate-pulse border border-gray-100/80 dark:border-slate-800/60">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-gray-100 dark:bg-slate-800 rounded-xl" />
+              <div className="h-3 bg-gray-100 dark:bg-slate-800 rounded w-16" />
+            </div>
+            <div className="h-8 bg-gray-100 dark:bg-slate-800 rounded-lg w-28" />
+          </div>
         ))}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-3xl p-8 h-80 animate-pulse border border-gray-100 dark:border-slate-700/50" />
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 h-80 animate-pulse border border-gray-100 dark:border-slate-700/50" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900/80 rounded-2xl p-6 h-72 animate-pulse border border-gray-100/80 dark:border-slate-800/60" />
+        <div className="bg-white dark:bg-slate-900/80 rounded-2xl p-6 h-72 animate-pulse border border-gray-100/80 dark:border-slate-800/60" />
       </div>
     </div>
   )

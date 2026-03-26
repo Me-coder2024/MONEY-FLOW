@@ -6,12 +6,17 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl gradient-indigo flex items-center justify-center text-white text-xl font-bold animate-pulse">
+      <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex items-center justify-center transition-colors">
+        <div className="flex flex-col items-center gap-4 animate-fade-in">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-2xl font-black shadow-xl shadow-indigo-200/50 dark:shadow-indigo-900/30 animate-float">
             ₹
           </div>
-          <p className="text-sm text-gray-500">Loading...</p>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <p className="text-xs text-gray-400 dark:text-slate-500 font-medium">Loading your workspace...</p>
         </div>
       </div>
     )
