@@ -29,13 +29,11 @@ export function validateWithdrawal(withdrawal, fund) {
   // CHECK 2: GST Bill mandatory for grant
   if (fund?.fund_type === 'grant') {
     const hasBill = !!withdrawal.bill_document_url
-    const hasGstin = !!withdrawal.vendor_gstin
-    const hasBillNo = !!withdrawal.bill_number
     checks.push({
       id: 'bill',
       label: 'GST bill attached',
-      passed: hasBill && hasGstin && hasBillNo,
-      message: hasBill && hasGstin && hasBillNo ? 'All bill details provided' : 'GST bill required for grant fund',
+      passed: hasBill,
+      message: hasBill ? 'Bill document attached' : 'Bill document required for grant fund',
     })
   } else {
     checks.push({
@@ -59,8 +57,8 @@ export function validateWithdrawal(withdrawal, fund) {
     checks.push({
       id: 'gstin',
       label: 'GSTIN format valid',
-      passed: fund?.fund_type !== 'grant',
-      message: fund?.fund_type === 'grant' ? 'GSTIN required for grant fund' : 'No GSTIN provided',
+      passed: true,
+      message: 'No GSTIN provided (Optional)',
     })
   }
 
@@ -69,6 +67,12 @@ export function validateWithdrawal(withdrawal, fund) {
     const spentDate = new Date(withdrawal.spent_date)
     const start = new Date(fund.grant_start_date)
     const end = new Date(fund.grant_end_date)
+    
+    // Ignore time data for edge cases
+    start.setHours(0,0,0,0)
+    end.setHours(23,59,59,999)
+    spentDate.setHours(12,0,0,0)
+    
     const inPeriod = spentDate >= start && spentDate <= end
     checks.push({
       id: 'period',
