@@ -29,57 +29,81 @@ export default function FundCreate() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto animate-fade-in">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Create New Fund</h1>
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fund Type *</label>
-          <select value={form.fund_type} onChange={e => setForm({ ...form, fund_type: e.target.value })}
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none">
-            {FUND_TYPES.map(t => <option key={t} value={t}>{FUND_LABELS[t]}</option>)}
-          </select>
-        </div>
+    <div className="max-w-3xl mx-auto animate-fade-in pb-20">
+      <div className="mb-10 text-center sm:text-left">
+        <h1 className="text-3xl font-black text-gray-900 dark:text-white tracking-tight">Initialize Fund</h1>
+        <p className="text-gray-500 dark:text-slate-400 mt-2">Deploy a new fiscal repository for specific resource allocation.</p>
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Fund Name *</label>
-          <input type="text" required value={form.fund_name} onChange={e => setForm({ ...form, fund_name: e.target.value })}
-            placeholder="e.g., DST-NIDHI PRAYAS Grant"
-            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+      <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50 p-8 md:p-12 space-y-8 relative overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <label className="block text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Governance Type *</label>
+            <div className="relative group">
+              <select value={form.fund_type} onChange={e => setForm({ ...form, fund_type: e.target.value })}
+                className="w-full appearance-none bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all cursor-pointer">
+                {FUND_TYPES.map(t => <option key={t} value={t}>{FUND_LABELS[t]}</option>)}
+              </select>
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-primary-500 transition-colors">⌄</div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Designation / Name *</label>
+            <input type="text" required value={form.fund_name} onChange={e => setForm({ ...form, fund_name: e.target.value })}
+              placeholder="e.g. DST-NIDHI PRAYAS Grant"
+              className="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all" />
+          </div>
         </div>
 
         {form.fund_type === 'grant' && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Grant Agency Name</label>
-              <input type="text" value={form.grant_agency_name} onChange={e => setForm({ ...form, grant_agency_name: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+          <div className="space-y-8 animate-scale-in p-8 bg-primary-50/30 dark:bg-primary-900/10 rounded-[2rem] border border-primary-100 dark:border-primary-900/20">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-primary-600 flex items-center justify-center text-white text-lg">📁</div>
+              <h2 className="text-xs font-black text-primary-600 dark:text-primary-400 uppercase tracking-widest">Grant Specifications</h2>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                <label className="block text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Awarding Agency</label>
+                <input type="text" value={form.grant_agency_name} onChange={e => setForm({ ...form, grant_agency_name: e.target.value })}
+                  placeholder="Official Agency Name"
+                  className="w-full bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Total Sanctioned Capital (₹)</label>
+                <div className="relative group">
+                  <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500 font-black">₹</span>
+                  <input type="number" value={form.grant_total_sanctioned} onChange={e => setForm({ ...form, grant_total_sanctioned: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl pl-10 pr-5 py-4 text-gray-900 dark:text-white font-black text-lg focus:ring-2 focus:ring-primary-500 outline-none" />
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div>
+                <label className="block text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Execution Start Date</label>
                 <input type="date" value={form.grant_start_date} onChange={e => setForm({ ...form, grant_start_date: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+                  className="w-full bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <label className="block text-xs font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Termination Date</label>
                 <input type="date" value={form.grant_end_date} onChange={e => setForm({ ...form, grant_end_date: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+                  className="w-full bg-white dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none" />
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Sanctioned Amount (₹)</label>
-              <input type="number" value={form.grant_total_sanctioned} onChange={e => setForm({ ...form, grant_total_sanctioned: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
-            </div>
-          </>
+          </div>
         )}
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t border-gray-50 dark:border-slate-700/50">
           <button type="button" onClick={() => navigate('/funds')}
-            className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
+            className="w-full sm:w-auto px-10 py-5 rounded-2xl text-gray-500 dark:text-slate-400 font-black text-xs uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-colors">
+            Abort Initialization
+          </button>
           <button type="submit" disabled={submitting}
-            className="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-xl shadow-sm transition-all hover:shadow-md disabled:opacity-50">
-            {submitting ? 'Creating...' : 'Create Fund'}
+            className="w-full sm:flex-1 bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black text-xs uppercase tracking-widest py-5 rounded-2xl shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50">
+            {submitting ? 'Processing Network...' : 'Confirm & Initialize Fund ⚡'}
           </button>
         </div>
       </form>

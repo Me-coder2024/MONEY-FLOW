@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { AppProvider } from './context/AppContext'
+import { ThemeProvider } from './context/ThemeContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AppLayout from './components/layout/AppLayout'
 import Dashboard from './pages/Dashboard'
@@ -24,8 +25,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppProvider>
-          <Routes>
+        <ThemeProvider>
+          <AppProvider>
+            <Routes>
             <Route path="/login" element={<Login />} />
             <Route element={
               <ProtectedRoute>
@@ -50,7 +52,8 @@ export default function App() {
             </Route>
           </Routes>
         </AppProvider>
-      </AuthProvider>
-    </BrowserRouter>
+      </ThemeProvider>
+    </AuthProvider>
+  </BrowserRouter>
   )
 }

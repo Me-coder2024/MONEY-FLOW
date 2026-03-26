@@ -3,97 +3,103 @@ import { useApp } from '../context/AppContext'
 export default function Settings() {
   const { currentUser } = useApp()
 
+  const permissions = [
+    ['Add Fund', true, false, false, false],
+    ['Deposit', true, true, false, false],
+    ['Request Withdrawal', true, true, true, false],
+    ['Approve Withdrawal', true, true, false, false],
+    ['Upload Bill', true, true, true, false],
+    ['View Reports', true, true, true, true],
+    ['Export Data', true, true, false, false],
+    ['Audit Log', true, false, false, false],
+  ]
+
   return (
-    <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your profile, team, and company settings</p>
+    <div className="max-w-4xl mx-auto space-y-10 animate-fade-in pb-20 px-4 md:px-0">
+      <div className="text-center md:text-left">
+        <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight leading-none mb-2">System Configuration</h1>
+        <p className="text-gray-500 dark:text-slate-400 font-medium">Manage institutional identity, team permissions, and security protocols.</p>
       </div>
 
-      {/* Profile */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Profile</h3>
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-16 h-16 rounded-full gradient-indigo flex items-center justify-center text-white text-2xl font-bold">
-            {currentUser.name.charAt(0)}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        <div className="lg:col-span-2 space-y-10">
+          {/* Profile Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50 p-8 md:p-12 relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-center gap-8 mb-12">
+              <div className="w-24 h-24 rounded-[2rem] bg-indigo-600 flex items-center justify-center text-white text-4xl font-black shadow-lg shadow-indigo-200 dark:shadow-none">
+                {currentUser?.name?.charAt(0)}
+              </div>
+              <div className="text-center sm:text-left">
+                <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">{currentUser?.name}</h3>
+                <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mt-1">Authorized {currentUser?.role}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Input label="Legal Full Name" value={currentUser?.name} />
+              <Input label="Institutional Email" value="admin@company.in" type="email" />
+            </div>
           </div>
-          <div>
-            <p className="text-lg font-bold text-gray-900">{currentUser.name}</p>
-            <p className="text-sm text-gray-500 capitalize">{currentUser.role}</p>
+
+          {/* Company Section */}
+          <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50 p-8 md:p-12">
+            <h4 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-10">Institutional Identity</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <Input label="Organization Designation" value="My Startup Pvt Ltd" />
+              <Input label="Tax Identity (GSTIN)" value="27AAPFU0939F1ZV" />
+              <div className="md:col-span-2">
+                <label className="block text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Headquarters Address</label>
+                <textarea rows={3} defaultValue="Pune, Maharashtra, India 411001"
+                  className="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all resize-none" />
+              </div>
+            </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input type="text" defaultValue={currentUser.name}
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+
+        <div className="space-y-10">
+          {/* Security Permissions */}
+          <div className="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-xl shadow-gray-200/50 dark:shadow-none border border-gray-100 dark:border-slate-700/50 p-8 overflow-hidden">
+            <h4 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-8">Governance Matrix</h4>
+            <div className="overflow-x-auto -mx-8 px-8">
+              <table className="w-full text-left border-separate border-spacing-y-2">
+                <thead>
+                  <tr className="text-[9px] font-black text-gray-400 dark:text-slate-600 uppercase tracking-widest">
+                    <th className="pb-4">Operation</th>
+                    <th className="pb-4 text-center">Adm</th>
+                    <th className="pb-4 text-center">Mng</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {permissions.map(([action, admin, manager]) => (
+                    <tr key={action} className="group hover:bg-gray-50 dark:hover:bg-slate-900/50 transition-colors">
+                      <td className="py-2 text-[11px] font-black text-gray-600 dark:text-slate-400 uppercase">{action}</td>
+                      <td className="py-2 text-center text-xs">{admin ? '⚡' : '⬘'}</td>
+                      <td className="py-2 text-center text-xs">{manager ? '⚡' : '⬘'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-8 pt-8 border-t border-gray-50 dark:border-slate-700/50 text-[10px] text-gray-400 dark:text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
+              * Matrix is read-only. Modification requires master-node authorization.
+            </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" defaultValue="admin@company.in"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
-          </div>
+
+          <button className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-black text-xs uppercase tracking-widest py-6 rounded-2xl shadow-xl hover:scale-105 transition-all">
+            Commit System Changes ⚡
+          </button>
         </div>
       </div>
+    </div>
+  )
+}
 
-      {/* Company */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Company Details</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-            <input type="text" defaultValue="My Startup Pvt Ltd"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company GSTIN</label>
-            <input type="text" defaultValue="27AAPFU0939F1ZV" placeholder="15 digit GSTIN"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none font-mono" />
-          </div>
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-            <textarea rows={2} defaultValue="Pune, Maharashtra, India 411001"
-              className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-none" />
-          </div>
-        </div>
-      </div>
-
-      {/* Team */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Role Permissions</h3>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-xs text-gray-400 uppercase border-b border-gray-100">
-              <th className="text-left py-2">Action</th>
-              <th className="text-center py-2">Admin</th>
-              <th className="text-center py-2">Manager</th>
-              <th className="text-center py-2">Member</th>
-              <th className="text-center py-2">Viewer</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50 text-gray-600">
-            {[
-              ['Add Fund', true, false, false, false],
-              ['Deposit', true, true, false, false],
-              ['Request Withdrawal', true, true, true, false],
-              ['Approve Withdrawal', true, true, false, false],
-              ['Upload Bill', true, true, true, false],
-              ['View Reports', true, true, true, true],
-              ['Export Data', true, true, false, false],
-              ['Audit Log', true, false, false, false],
-            ].map(([action, ...perms]) => (
-              <tr key={action}>
-                <td className="py-2 font-medium">{action}</td>
-                {perms.map((p, i) => <td key={i} className="text-center py-2">{p ? '✅' : '❌'}</td>)}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <button className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 rounded-xl shadow-sm transition-all hover:shadow-md">
-        Save Changes
-      </button>
+function Input({ label, value, type = 'text' }) {
+  return (
+    <div>
+      <label className="block text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">{label}</label>
+      <input type={type} defaultValue={value}
+        className="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-gray-900 dark:text-white font-bold focus:ring-2 focus:ring-primary-500 outline-none transition-all" />
     </div>
   )
 }
