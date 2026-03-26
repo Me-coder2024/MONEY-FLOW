@@ -62,6 +62,7 @@ export default function WithdrawalsList() {
               <th className="text-left py-3 px-4">Fund</th>
               <th className="text-left py-3 px-4">Requested By</th>
               <th className="text-right py-3 px-4">Amount</th>
+              <th className="text-center py-3 px-4">Bill</th>
               <th className="text-left py-3 px-6">Status</th>
             </tr>
           </thead>
@@ -84,6 +85,15 @@ export default function WithdrawalsList() {
                   </td>
                   <td className="py-3 px-4 text-gray-600">{tx.requested_by}</td>
                   <td className="py-3 px-4 text-right font-semibold text-gray-900">{formatCurrency(tx.total_amount)}</td>
+                  <td className="py-3 px-4 text-center">
+                    {tx.bill_document_url ? (
+                      <a href={tx.bill_document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:opacity-80" title="View Bill">
+                        📄
+                      </a>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
                   <td className="py-3 px-6">
                     <span className={`text-[11px] px-2.5 py-1 rounded-full font-medium ${status.bg} ${status.text}`}>
                       {tx.approval_status}

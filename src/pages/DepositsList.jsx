@@ -29,6 +29,7 @@ export default function DepositsList() {
               <th className="text-left py-3 px-4">Fund</th>
               <th className="text-left py-3 px-4">Source</th>
               <th className="text-left py-3 px-4">Founder</th>
+              <th className="text-center py-3 px-4">Proof</th>
               <th className="text-right py-3 px-4">Amount</th>
               <th className="text-left py-3 px-6">Reference</th>
             </tr>
@@ -46,6 +47,15 @@ export default function DepositsList() {
                   </td>
                   <td className="py-3 px-4 text-gray-700 max-w-48 truncate">{dep.source_description}</td>
                   <td className="py-3 px-4 text-gray-600">{dep.founders?.name || '—'}</td>
+                  <td className="py-3 px-4 text-center">
+                    {dep.proof_document_url ? (
+                      <a href={dep.proof_document_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:opacity-80" title="View Proof">
+                        📄
+                      </a>
+                    ) : (
+                      <span className="text-gray-300">—</span>
+                    )}
+                  </td>
                   <td className="py-3 px-4 text-right font-bold text-emerald-600">{formatCurrency(dep.amount)}</td>
                   <td className="py-3 px-6 text-gray-400 font-mono text-xs">{dep.reference_number}</td>
                 </tr>

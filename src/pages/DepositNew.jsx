@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { FUND_LABELS } from '../utils/constants'
 import { formatCurrency } from '../utils/format'
+import { uploadToCloudinary } from '../utils/cloudinary'
 
 export default function DepositNew() {
   const { funds, founders, addDeposit } = useApp()
@@ -12,17 +13,35 @@ export default function DepositNew() {
     reference_number: '', source_description: '',
   })
   const [submitting, setSubmitting] = useState(false)
+  const [proofFile, setProofFile] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState('')
+  const fileInputRef = useRef(null)
 
   const selectedFund = funds.find(f => f.id === parseInt(form.fund_id))
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
+
+    let uploadedUrl = null
+    if (proofFile) {
+      setUploadProgress('Uploading proof...')
+      try {
+        uploadedUrl = await uploadToCloudinary(proofFile)
+      } catch (err) {
+        alert('Failed to upload proof. Please try again.')
+        setSubmitting(false)
+        setUploadProgress('')
+        return
+      }
+    }
+
     const payload = {
       ...form,
       fund_id: parseInt(form.fund_id),
       founder_id: form.founder_id ? parseInt(form.founder_id) : null,
       amount: parseFloat(form.amount),
+      proof_document_url: uploadedUrl || null
     }
     const result = await addDeposit(payload)
     setSubmitting(false)
@@ -80,12 +99,46 @@ export default function DepositNew() {
             className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none resize-none" />
         </div>
 
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Upload Payment Proof (Optional)</label>
+          <div 
+            className="upload-zone border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-500 transition-colors"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*,application/pdf"
+              onChange={e => {
+                if(e.target.files[0]) setProofFile(e.target.files[0])
+              }} 
+            />
+            {proofFile ? (
+              <div className="flex items-center justify-center gap-2 text-emerald-600">
+                <span>✅</span>
+                <span className="font-medium truncate max-w-xs">{proofFile.name}</span>
+                <button 
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); setProofFile(null); if(fileInputRef.current) fileInputRef.current.value = ''; }}
+                  className="text-gray-400 hover:text-red-500 ml-2"
+                >✕</button>
+              </div>
+            ) : (
+              <>
+                <p className="text-gray-500">📄 Click to select file</p>
+                <p className="text-xs text-gray-400 mt-1">PDF, JPG, PNG (Max 5MB)</p>
+              </>
+            )}
+          </div>
+        </div>
+
         <div className="flex gap-3 pt-2">
           <button type="button" onClick={() => navigate('/deposits')}
             className="px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors">Cancel</button>
           <button type="submit" disabled={submitting}
             className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 rounded-xl shadow-sm transition-all hover:shadow-md disabled:opacity-50">
-            {submitting ? 'Recording...' : 'Record Deposit'}
+            {submitting ? (uploadProgress || 'Recording...') : 'Record Deposit'}
           </button>
         </div>
       </form>

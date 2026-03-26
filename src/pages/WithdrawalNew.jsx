@@ -1,10 +1,11 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../context/AppContext'
 import { calculateGST } from '../utils/gst'
 import { validateGSTIN, validateWithdrawal } from '../utils/validation'
 import { formatCurrency, formatCurrencyShort, percentage } from '../utils/format'
 import { FUND_COLORS, FUND_LABELS, FUND_ICONS, CATEGORIES, GST_RATES } from '../utils/constants'
+import { uploadToCloudinary } from '../utils/cloudinary'
 
 const STEPS = ['Fund', 'Details', 'GST & Bill', 'Review']
 
@@ -13,6 +14,9 @@ export default function WithdrawalNew() {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
+  const [billFile, setBillFile] = useState(null)
+  const [uploadProgress, setUploadProgress] = useState('')
+  const fileInputRef = useRef(null)
 
   const [form, setForm] = useState({
     fund_id: '', amount_before_gst: '', purpose: '', category: '',
@@ -30,7 +34,7 @@ export default function WithdrawalNew() {
 
   const validationChecks = selectedFund ? validateWithdrawal({
     ...form, total_amount: gst.grandTotal,
-    bill_document_url: form.bill_document_url || (selectedFund.fund_type !== 'grant' ? 'optional' : ''),
+    bill_document_url: billFile ? 'has_file' : '',
   }, {
     ...selectedFund, pending_amount: 0,
   }) : []
@@ -39,6 +43,24 @@ export default function WithdrawalNew() {
 
   const handleSubmit = async () => {
     setSubmitting(true)
+    
+    let uploadedUrl = null
+    if (billFile) {
+      setUploadProgress('Uploading bill...')
+      try {
+        uploadedUrl = await uploadToCloudinary(billFile)
+      } catch (err) {
+        alert('Failed to upload bill document. Please try again.')
+        setSubmitting(false)
+        setUploadProgress('')
+        return
+      }
+    } else {
+      alert('Bill document is required.')
+      setSubmitting(false)
+      return
+    }
+
     const payload = {
       fund_id: parseInt(form.fund_id),
       requested_by: form.requested_by,
@@ -54,7 +76,7 @@ export default function WithdrawalNew() {
       vendor_gstin: form.vendor_gstin || null,
       bill_number: form.bill_number || null,
       bill_date: form.bill_date || null,
-      bill_document_url: form.bill_document_url || null,
+      bill_document_url: uploadedUrl,
       spent_location: form.spent_location,
       spent_date: form.spent_date,
       remarks: form.remarks || null,
@@ -256,28 +278,39 @@ export default function WithdrawalNew() {
               </div>
             </div>
 
-            {/* File Upload (Simulated) */}
+            {/* File Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Upload GST Bill {selectedFund?.fund_type === 'grant' && <span className="text-red-500">*</span>}
+                Upload GST Bill <span className="text-red-500">*</span>
               </label>
-              <div className="upload-zone border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer"
-                onClick={() => update('bill_document_url', 'gst_bill_uploaded.pdf')}>
-                {form.bill_document_url ? (
+              <div className="upload-zone border-2 border-dashed border-gray-300 rounded-xl p-8 text-center cursor-pointer hover:border-primary-500 transition-colors"
+                onClick={() => fileInputRef.current?.click()}>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*,application/pdf"
+                  onChange={e => {
+                    if(e.target.files[0]) {
+                      setBillFile(e.target.files[0])
+                      update('bill_document_url', e.target.files[0].name)
+                    }
+                  }} 
+                />
+                {billFile ? (
                   <div className="flex items-center justify-center gap-2 text-emerald-600">
                     <span>✅</span>
-                    <span className="font-medium">{form.bill_document_url}</span>
-                    <button onClick={e => { e.stopPropagation(); update('bill_document_url', '') }}
+                    <span className="font-medium truncate max-w-xs">{billFile.name}</span>
+                    <button onClick={e => { e.stopPropagation(); setBillFile(null); update('bill_document_url', ''); if(fileInputRef.current) fileInputRef.current.value = ''; }}
                       className="text-gray-400 hover:text-red-500 ml-2">✕</button>
                   </div>
                 ) : (
                   <>
-                    <p className="text-gray-500">📄 Click to simulate bill upload</p>
+                    <p className="text-gray-500">📄 Click to select bill file</p>
                     <p className="text-xs text-gray-400 mt-1">PDF, JPG, PNG (Max 5MB)</p>
                   </>
                 )}
               </div>
-              {selectedFund?.fund_type === 'grant' && <p className="text-xs text-amber-600 mt-1">⚠️ Mandatory for Grant Fund</p>}
             </div>
           </div>
         )}
@@ -362,7 +395,7 @@ export default function WithdrawalNew() {
           ) : (
             <button onClick={handleSubmit} disabled={submitting || !allPassReview}
               className="px-8 py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold shadow-lg transition-all hover:shadow-xl disabled:opacity-40">
-              {submitting ? 'Submitting...' : 'Submit Withdrawal Request'}
+              {submitting ? (uploadProgress || 'Submitting...') : 'Submit Withdrawal Request'}
             </button>
           )}
         </div>

@@ -67,7 +67,7 @@ export default function WithdrawalDetail() {
               <Info label="Invoice No" value={w.bill_number || '—'} />
               <Info label="Bill Date" value={formatDate(w.bill_date)} />
               <Info label="Vendor GSTIN" value={w.vendor_gstin || '—'} />
-              <Info label="Bill Attached" value={w.bill_document_url ? '📎 Yes' : 'No'} />
+              <Info label="Bill Attached" value={w.bill_document_url ? <a href={w.bill_document_url} target="_blank" rel="noreferrer" className="text-primary-600 hover:text-primary-800 font-medium">📎 View Document</a> : 'No'} />
             </div>
           </div>
         )}
