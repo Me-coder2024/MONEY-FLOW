@@ -65,16 +65,18 @@ export function AppProvider({ children }) {
   const addDeposit = async (deposit) => {
     const { data, error } = await supabase.from('deposits').insert({ ...deposit, user_id: workspaceId }).select('*, funds(fund_name, fund_type), founders(name)').single()
     if (error) { addToast(error.message, 'error'); return null }
-    const fund = funds.find(f => f.id === deposit.fund_id)
-    if (fund) {
-      const newBalance = parseFloat(fund.current_balance) + parseFloat(deposit.amount)
-      const newDeposited = parseFloat(fund.total_deposited) + parseFloat(deposit.amount)
+    // Fetch latest fund to prevent stale reads
+    const { data: latestFund } = await supabase.from('funds').select('current_balance, total_deposited').eq('id', deposit.fund_id).single()
+    if (latestFund) {
+      const newBalance = parseFloat(latestFund.current_balance || 0) + parseFloat(deposit.amount)
+      const newDeposited = parseFloat(latestFund.total_deposited || 0) + parseFloat(deposit.amount)
       await supabase.from('funds').update({ current_balance: newBalance, total_deposited: newDeposited }).eq('id', deposit.fund_id)
     }
+
     if (deposit.founder_id) {
-      const founder = founders.find(f => f.id === deposit.founder_id)
-      if (founder) {
-        await supabase.from('founders').update({ total_contributed: parseFloat(founder.total_contributed) + parseFloat(deposit.amount) }).eq('id', deposit.founder_id)
+      const { data: latestFounder } = await supabase.from('founders').select('total_contributed').eq('id', deposit.founder_id).single()
+      if (latestFounder) {
+        await supabase.from('founders').update({ total_contributed: parseFloat(latestFounder.total_contributed || 0) + parseFloat(deposit.amount) }).eq('id', deposit.founder_id)
       }
     }
     await supabase.from('audit_log').insert({
@@ -106,10 +108,10 @@ export function AppProvider({ children }) {
       approval_status: 'approved', approved_by: currentUser.name, remarks,
     }).eq('id', id)
     if (error) { addToast(error.message, 'error'); return }
-    const fund = funds.find(f => f.id === w.fund_id)
-    if (fund) {
-      const newBalance = parseFloat(fund.current_balance) - parseFloat(w.total_amount)
-      const newSpent = parseFloat(fund.total_spent) + parseFloat(w.total_amount)
+    const { data: latestFund } = await supabase.from('funds').select('current_balance, total_spent').eq('id', w.fund_id).single()
+    if (latestFund) {
+      const newBalance = parseFloat(latestFund.current_balance || 0) - parseFloat(w.total_amount)
+      const newSpent = parseFloat(latestFund.total_spent || 0) + parseFloat(w.total_amount)
       await supabase.from('funds').update({ current_balance: newBalance, total_spent: newSpent }).eq('id', w.fund_id)
     }
     await fetchAll()
@@ -127,15 +129,16 @@ export function AppProvider({ children }) {
 
   // --- FOUNDER OPERATIONS ---
   const addFounder = async (founder) => {
+    const { initial_contribution, ...founderData } = founder
     // 1. Add to founders table
-    const { data, error } = await supabase.from('founders').insert({ ...founder, user_id: workspaceId }).select().single()
+    const { data, error } = await supabase.from('founders').insert({ ...founderData, user_id: workspaceId }).select().single()
     if (error) { addToast(error.message, 'error'); return null }
 
     // 2. Add to workspace_members so they can access this workspace when they log in
     const { error: memberError } = await supabase.from('workspace_members').upsert({
       workspace_id: workspaceId,
-      member_email: founder.email,
-      member_name: founder.name,
+      member_email: founderData.email,
+      member_name: founderData.name,
       role: 'founder',
     }, { onConflict: 'workspace_id,member_email' })
 
@@ -143,11 +146,27 @@ export function AppProvider({ children }) {
 
     await supabase.from('audit_log').insert({
       action: 'deposit', table_affected: 'founders', record_id: data.id,
-      performed_by: currentUser.name, new_value: { name: founder.name, email: founder.email }, user_id: workspaceId,
+      performed_by: currentUser.name, new_value: { name: founderData.name, email: founderData.email }, user_id: workspaceId,
     })
 
-    await fetchAll()
-    addToast(`${founder.name} added as founder! They can now log in with ${founder.email} to access this dashboard.`)
+    // 3. If there is an initial contribution, automatically add it to the Sarkari Fund
+    if (initial_contribution && initial_contribution > 0) {
+      const sarkariFund = funds.find(f => f.fund_type === 'sarkari')
+      if (sarkariFund) {
+        await addDeposit({
+          fund_id: sarkariFund.id,
+          founder_id: data.id,
+          amount: initial_contribution,
+          deposit_date: new Date().toISOString().split('T')[0],
+          source_description: `Initial contribution by ${founderData.name}`,
+          reference_number: `INIT-${data.id}`
+        })
+      }
+    } else {
+      await fetchAll()
+    }
+
+    addToast(`${founderData.name} added as founder! They can now log in with ${founderData.email} to access this dashboard.`)
     return data
   }
 

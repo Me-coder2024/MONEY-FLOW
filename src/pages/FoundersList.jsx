@@ -25,6 +25,7 @@ export default function FoundersList() {
       phone: form.phone || null,
       equity_percentage: form.equity_percentage ? parseFloat(form.equity_percentage) : 0,
       total_contributed: 0,
+      initial_contribution: form.total_contributed ? parseFloat(form.total_contributed) : 0,
     })
     setSubmitting(false)
     if (result) {
@@ -83,6 +84,14 @@ export default function FoundersList() {
                   placeholder="e.g., 25"
                   className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
               </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Initial Contribution Amount (₹, Optional)</label>
+              <input type="number" min="0" value={form.total_contributed || ''}
+                onChange={e => setForm({ ...form, total_contributed: e.target.value })}
+                placeholder="e.g., 50000"
+                className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none" />
+              <p className="text-xs text-gray-400 mt-1">This amount will be automatically deposited into the Sarkari Fund.</p>
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
               <p className="text-xs text-blue-700">
