@@ -160,6 +160,7 @@ export function AppProvider({ children }) {
   }
 
   const approveWithdrawal = async (id, remarks = '') => {
+    if (workspaceRole !== 'owner') { addToast('Unauthorized: Only owner can approve', 'error'); return }
     const w = withdrawals.find(w => w.id === id)
     if (!w) return
     const { error } = await supabase.from('withdrawals').update({
@@ -177,6 +178,7 @@ export function AppProvider({ children }) {
   }
 
   const rejectWithdrawal = async (id, remarks = '') => {
+    if (workspaceRole !== 'owner') { addToast('Unauthorized: Only owner can reject', 'error'); return }
     const { error } = await supabase.from('withdrawals').update({
       approval_status: 'rejected', approved_by: currentUser.name, remarks,
     }).eq('id', id)

@@ -3,9 +3,11 @@ import { useApp } from '../context/AppContext'
 import { formatCurrency, formatDate } from '../utils/format'
 import { FUND_COLORS, FUND_LABELS, STATUS_COLORS, CATEGORIES } from '../utils/constants'
 import { validateWithdrawal } from '../utils/validation'
+import { useAuth } from '../context/AuthContext'
 
 export default function ApprovalQueue() {
   const { pendingWithdrawals, funds, approveWithdrawal, rejectWithdrawal } = useApp()
+  const { isOwner } = useAuth()
   const [remarks, setRemarks] = useState({})
   const [processing, setProcessing] = useState(null)
 
@@ -53,7 +55,7 @@ export default function ApprovalQueue() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-0.5">
-                          <span className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest leading-none">#REQ-{w.id.substring(0,6)}</span>
+                          <span className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest leading-none">#REQ-{w.id.toString().slice(-6)}</span>
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-tighter ${colors?.light} ${colors?.text} dark:bg-slate-900/40`}>
                             {fund?.fund_type}
                           </span>
@@ -101,24 +103,32 @@ export default function ApprovalQueue() {
                   </div>
 
                   {/* Actions Area */}
-                  <div className="flex flex-col md:flex-row items-center gap-4 pt-6 border-t border-gray-50 dark:border-slate-700/50">
-                    <div className="relative flex-1 w-full">
-                      <input type="text" placeholder="Add administrative remark..."
-                        value={remarks[w.id] || ''} onChange={e => setRemarks({ ...remarks, [w.id]: e.target.value })}
-                        className="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all" />
+                  {isOwner ? (
+                    <div className="flex flex-col md:flex-row items-center gap-4 pt-6 border-t border-gray-50 dark:border-slate-700/50">
+                      <div className="relative flex-1 w-full">
+                        <input type="text" placeholder="Add administrative remark..."
+                          value={remarks[w.id] || ''} onChange={e => setRemarks({ ...remarks, [w.id]: e.target.value })}
+                          className="w-full bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 rounded-2xl px-5 py-4 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all" />
+                      </div>
+                      
+                      <div className="flex items-center gap-3 w-full md:w-auto">
+                        <button onClick={() => handleReject(w.id)} disabled={processing === w.id}
+                          className="flex-1 md:flex-none px-8 py-4 rounded-2xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 transition-all font-black text-xs uppercase tracking-widest">
+                          Reject
+                        </button>
+                        <button onClick={() => handleApprove(w.id)} disabled={processing === w.id}
+                          className="flex-1 md:flex-none px-10 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 dark:shadow-none transition-all hover:scale-105 font-black text-xs uppercase tracking-widest disabled:opacity-50">
+                          {processing === w.id ? 'Processing...' : 'Approve'}
+                        </button>
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                      <button onClick={() => handleReject(w.id)} disabled={processing === w.id}
-                        className="flex-1 md:flex-none px-8 py-4 rounded-2xl border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 transition-all font-black text-xs uppercase tracking-widest">
-                        Reject
-                      </button>
-                      <button onClick={() => handleApprove(w.id)} disabled={processing === w.id}
-                        className="flex-1 md:flex-none px-10 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 dark:shadow-none transition-all hover:scale-105 font-black text-xs uppercase tracking-widest disabled:opacity-50">
-                        {processing === w.id ? 'Processing...' : 'Approve'}
-                      </button>
+                  ) : (
+                    <div className="mt-6 pt-6 border-t border-gray-50 dark:border-slate-700/50">
+                      <p className="text-center text-xs font-bold text-amber-600 dark:text-amber-500 bg-amber-50 dark:bg-amber-900/10 py-3 rounded-xl border border-amber-100 dark:border-amber-900/20">
+                        Only the Workspace Owner can approve or reject requests.
+                      </p>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )
